@@ -11,24 +11,52 @@ import {
   Github,
   Check,
 } from 'lucide-react';
+import { useState } from 'react';
+import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 import { Link } from 'react-router-dom';
 
 function Login() {
+  const navigate = useNavigate();
+
+  const [isPasswordVisible, setIsPasswordVisible] = useState(false);
+  const [emailInput, setEmailInput] = useState('');
+  const [passwordInput, setPasswordInput] = useState('');
+  const [thereIsError, setThereIsError] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!emailInput || !passwordInput) {
+      setThereIsError(true);
+      alert('Todos os campos devem ser preenchidos.');
+      return;
+    }
+
+    try {
+      const response = await axios.post(
+        'https://organotes-backend.onrender.com/auth/signIn',
+        {
+          email: emailInput,
+          password: passwordInput,
+        },
+      );
+
+      localStorage.setItem('token', response.data.accessToken);
+      console.log('Token armazenado:', response.data.accessToken);
+
+      navigate('/activitiesPage/page');
+    } catch (error: any) {
+      console.error(error.message);
+      alert(`Erro no login: ${error.message}`);
+    }
+
+    setThereIsError(false);
+  };
+
   return (
     <>
-      <body className="bg-[#F1F3FE] relative">
-        {/* Traço Superior - Background */}
-        <div
-          className="absolute inset-0 bg-cover bg-no-repeat -z-10"
-          style={{
-            backgroundImage: "url('/bg.png')",
-            backgroundSize: 'cover',
-            backgroundPosition: '0px -80px',
-            height: '101vh',
-            width: '100%',
-          }}
-        ></div>
-
+      <div className="relative bg-[#F1F3FE] min-h-[500px] overflow-x-hidden">
         {/* Traço Inferior - Background */}
         <div
           className="absolute inset-0 bg-cover bg-no-repeat -z-10"
@@ -42,7 +70,14 @@ function Login() {
         ></div>
 
         {/* Cabeçalho */}
-        <header className="pt-8 px-56 lg:px-20">
+        <header className="relative z-10 pt-8 px-56 lg:px-20">
+          {/* Traço Superior - canto superior esquerdo */}
+          <div
+            className="absolute top-[-40px] left-0 w-[800px] h-[600px] bg-no-repeat bg-contain -z-10 pointer-events-none"
+            style={{
+              backgroundImage: "url('/bg-2.png')",
+            }}
+          />
           <div className="container mx-auto flex justify-between items-center">
             <div className="py-3 flex items-center">
               <h1 className="text-4xl relative font-bold after:content-[''] after:block after:w-[85px] after:h-[2px] after:bg-black after:ml-auto lg:text-2xl">
@@ -110,7 +145,18 @@ function Login() {
         </header>
 
         {/* Parte de Login */}
-        <nav className="px-56 lg:px-20 mt-[200px] lg:mt-[150px] mx-auto flex justify-between">
+        <nav className="relative z-0 px-56 lg:px-20 mt-[200px] lg:mt-[150px] mx-auto flex justify-between">
+          <div
+            className="absolute inset-0 bg-no-repeat -z-10"
+            style={{
+              backgroundImage: "url('/bg.png')",
+              backgroundSize: 'cover',
+              backgroundPosition: '0px -300px',
+              height: '63.7vh',
+              width: '100%',
+            }}
+          ></div>
+
           <div className="flex flex-col gap-2">
             <div className="flex flex-col gap-3 text-4xl font-bold">
               <h1>Lembre-se</h1>
@@ -145,77 +191,84 @@ function Login() {
               Login
             </h1>
 
-            <div className="flex flex-col gap-7 px-12">
+            <form
+              onSubmit={handleSubmit}
+              className="flex flex-col gap-7 px-12 w-full max-w-md mx-auto"
+            >
+              {/* Campo de e-mail */}
               <div className="flex flex-row gap-1 bg-[#CACCE599] w-full rounded shadow-[0_10px_30px_rgba(0,0,0,0.3)] px-2 py-3">
                 <User size={33} />
-
                 <div className="border-l-2 border-gray-700 h-8"></div>
-
                 <input
-                  type="text"
+                  type="email"
+                  name="email"
+                  value={emailInput}
+                  onChange={(e) => setEmailInput(e.target.value)}
                   placeholder="Digite seu e-mail"
                   className="bg-transparent outline-none px-2 text-black placeholder-gray-700 placeholder:text-lg w-full"
                 />
               </div>
 
+              {/* Campo de senha */}
               <div className="flex flex-row gap-[6px] bg-[#CACCE599] w-full rounded shadow-[0_10px_30px_rgba(0,0,0,0.3)] px-2 py-3">
                 <LockKeyhole size={33} />
-
                 <div className="border-l-2 border-gray-700 h-8"></div>
-
                 <input
-                  type="password"
+                  type={isPasswordVisible ? 'text' : 'password'}
+                  name="password"
+                  value={passwordInput}
+                  onChange={(e) => setPasswordInput(e.target.value)}
                   placeholder="Digite sua senha"
                   className="bg-transparent outline-none px-2 text-black placeholder-gray-700 placeholder:text-lg w-full"
                 />
               </div>
 
+              {/* Botão de login */}
+              <div className="flex justify-center">
+                <button
+                  type="submit"
+                  className="text-[#FFFFFF] hover:text-[#434561] transition delay-30 flex justify-center items-center"
+                >
+                  <div className="rounded-2xl px-15 py-2 bg-[#434561] hover:bg-[#F1F3FE] transition-colors duration-300 ease-in-out">
+                    <h1 className="text-2xl">Entrar</h1>
+                  </div>
+                </button>
+              </div>
+            </form>
+
+            <div className="flex justify-center items-center mt-10 gap-5 mb-10">
               <a
                 href="#"
-                className="text-[#FFFFFF] hover:text-[#434561] transition delay-30 flex justify-center items-center"
-              >
-                <div
-                  className="rounded-2xl px-15 py-2 bg-[#434561] hover:bg-[#F1F3FE] 
-                                transition-colors duration-300 ease-in-out"
-                >
-                  <h1 className="text-2xl">Entrar</h1>
-                </div>
-              </a>
-
-              <div className="flex justify-center gap-5 mb-15">
-                <a
-                  href="#"
-                  className="bg-[#1877F2] rounded-full w-8 h-8 flex items-center justify-center 
+                className="bg-[#1877F2] rounded-full w-8 h-8 flex items-center justify-center 
                               border-2 border-transparent transition-all duration-300 ease-in-out 
                               hover:border-white"
-                >
-                  <Facebook className="text-white w-6 h-6" />
-                </a>
+              >
+                <Facebook className="text-white w-6 h-6" />
+              </a>
 
-                <a
-                  href="#"
-                  className="bg-[#FFFF] rounded-full w-8 h-8 flex items-center justify-center 
+              <a
+                href="#"
+                className="bg-[#FFFF] rounded-full w-8 h-8 flex items-center justify-center 
                               border-2 border-transparent transition-all duration-300 ease-in-out 
                               hover:border-black"
-                >
-                  <img src="./google.png" className="w-5 h-5"></img>
-                </a>
+              >
+                <img src="./google.png" className="w-5 h-5"></img>
+              </a>
 
-                <a
-                  href="#"
-                  className="bg-[#FFFF] rounded-full w-8 h-8 flex items-center justify-center 
+              <a
+                href="#"
+                className="bg-[#FFFF] rounded-full w-8 h-8 flex items-center justify-center 
                               border-2 border-transparent transition-all duration-300 ease-in-out 
                               hover:border-black"
-                >
-                  <img src="./vk.png" className="w-5 h-5" alt="VK" />
-                </a>
-              </div>
+              >
+                <img src="./vk.png" className="w-5 h-5" alt="VK" />
+              </a>
             </div>
           </div>
         </nav>
 
         {/* Estatísticas - OrgaNotes */}
-        <div className="bg-[#979ACB] h-[180px] mt-36 lg:mt-[20px] flex justify-center items-center gap-40 lg:gap-25 mb-5">
+        <div className="bg-[#979ACB] h-[180px] mt-36 lg:mt-[32px] flex justify-center items-center gap-40 lg:gap-25 mb-5">
           <div className="text-[#FFFFFF]">
             <div className="text-6xl lg:text-5xl flex items-center justify-start font-bold">
               <h1 className="">+</h1>
@@ -683,7 +736,7 @@ function Login() {
             </div>
           </div>
         </footer>
-      </body>
+      </div>
     </>
   );
 }

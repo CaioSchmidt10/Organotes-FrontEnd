@@ -15,8 +15,12 @@ import {
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useState } from 'react';
+import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 function Cadastro() {
+  const navigate = useNavigate();
+
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -36,27 +40,26 @@ function Cadastro() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    const { name, email, password, cellphoneNumber } = formData;
+
+    if (!name || !email || !password || !cellphoneNumber) {
+      alert('Todos os campos devem ser preenchidos.');
+      return;
+    }
+
     try {
-      const response = await fetch(
-        'https://organotes-backend.onrender.com/register',
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(formData),
-        },
+      const response = await axios.post(
+        'https://organotes-backend.onrender.com/auth/signUp',
+        formData,
       );
 
-      if (!response.ok) {
-        throw new Error('Erro ao registrar');
-      }
+      console.log('Cadastro realizado:', response.data);
 
-      const data = await response.json();
-      console.log('Cadastro feito:', data);
-      // redirecionar ou mostrar mensagem de sucesso aqui
-    } catch (error) {
-      console.error('Erro ao enviar requisição:', error);
+      // Redirecionar para tela de login ou dashboard
+      navigate('/login');
+    } catch (error: any) {
+      console.error(error.message);
+      alert(`Erro ao cadastrar: ${error.message}`);
     }
   };
 
@@ -70,18 +73,6 @@ function Cadastro() {
             backgroundSize: 'cover',
             backgroundPosition: '0px -80px',
             height: '101vh',
-            width: '100%',
-          }}
-        ></div>
-
-        {/* Traço Inferior - Background */}
-        <div
-          className="absolute inset-0 bg-cover bg-no-repeat -z-10"
-          style={{
-            backgroundImage: "url('/bg-2.png')",
-            backgroundSize: 'contain',
-            backgroundPosition: '0px -10px',
-            height: '100vh',
             width: '100%',
           }}
         ></div>
@@ -213,7 +204,7 @@ function Cadastro() {
                     <Mail size={33} />
                     <div className="border-l-2 border-gray-700 h-8"></div>
                     <input
-                      type="text"
+                      type="email"
                       name="email"
                       placeholder="Digite seu e-mail"
                       value={formData.email}
@@ -228,7 +219,7 @@ function Cadastro() {
                     <div className="border-l-2 border-gray-700 h-8"></div>
                     <input
                       type="text"
-                      name="celular"
+                      name="cellphoneNumber"
                       placeholder="Digite seu número"
                       value={formData.cellphoneNumber}
                       onChange={handleChange}
@@ -242,7 +233,7 @@ function Cadastro() {
                     <div className="border-l-2 border-gray-700 h-8"></div>
                     <input
                       type="password"
-                      name="senha"
+                      name="password"
                       placeholder="Digite sua senha"
                       value={formData.password}
                       onChange={handleChange}
@@ -256,7 +247,7 @@ function Cadastro() {
                   <label className="flex justify-center items-center gap-2 text-black text-lg">
                     <input
                       type="checkbox"
-                      name="recieveNotify"
+                      name="receiveNotify"
                       checked={formData.receiveNotify}
                       onChange={handleChange}
                       className="w-5 h-5 text-[#434561]"
@@ -272,7 +263,7 @@ function Cadastro() {
                     >
                       <div
                         className="rounded-2xl px-15 lg:px-10 py-2 bg-[#434561] hover:bg-[#F1F3FE] 
-                                        transition-colors duration-300 ease-in-out"
+              transition-colors duration-300 ease-in-out"
                       >
                         <h1 className="text-2xl">Inscrever-se</h1>
                       </div>
