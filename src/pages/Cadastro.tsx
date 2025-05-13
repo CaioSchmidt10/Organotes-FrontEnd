@@ -65,20 +65,17 @@ function Cadastro() {
 
   return (
     <>
-      <main className="relative bg-[#F1F3FE]">
-        <div
-          className="absolute inset-0 bg-cover bg-no-repeat -z-10"
-          style={{
-            backgroundImage: "url('/bg.png')",
-            backgroundSize: 'cover',
-            backgroundPosition: '0px -80px',
-            height: '101vh',
-            width: '100%',
-          }}
-        ></div>
-
+      <div className="relative bg-[#F1F3FE] min-h-[500px] overflow-x-hidden">
         {/* Cabeçalho */}
-        <header className="pt-8 px-56 lg:px-20">
+        <header className="relative z-10 pt-8 px-56 lg:px-20">
+          {/* Traço Superior - canto superior esquerdo */}
+          <div
+            className="absolute top-[-40px] left-0 w-[800px] h-[600px] bg-no-repeat bg-contain -z-10 pointer-events-none"
+            style={{
+              backgroundImage: "url('/bg-2.png')",
+            }}
+          />
+
           <div className="container mx-auto flex justify-between items-center">
             <div className="py-3 flex items-center">
               <h1 className="text-4xl relative font-bold after:content-[''] after:block after:w-[85px] after:h-[2px] after:bg-black after:ml-auto lg:text-2xl">
@@ -146,8 +143,19 @@ function Cadastro() {
         </header>
 
         {/* Parte de Login */}
-        <nav className="px-56 lg:px-20 mt-[200px] lg:mt-[120px] mx-auto flex justify-between">
-          <div className="flex flex-col gap-2">
+        <nav className="relative z-0 px-56 lg:px-20 mt-[200px] lg:mt-[120px] mx-auto flex justify-between">
+          <div
+            className="absolute inset-0 bg-no-repeat -z-10"
+            style={{
+              backgroundImage: "url('/bg.png')",
+              backgroundSize: 'cover',
+              backgroundPosition: '0px -300px',
+              height: '68.2vh',
+              width: '100%',
+            }}
+          ></div>
+
+          <div className="flex flex-col gap-2 lg:mt-6">
             <div className="flex flex-col gap-3 text-4xl font-bold">
               <h1>Lembre-se</h1>
               <h1>do que importa,</h1>
@@ -176,7 +184,18 @@ function Cadastro() {
             </div>
           </div>
 
-          <div className="w-[400px] lg:w-[600px] bg-[#434561C7] lg:mt-[-10px] opacity-85 relative left-[-150px] lg:left-[-50px] top-[-20px] rounded-2xl">
+          <div
+            className="w-[400px] lg:w-[600px] lg:mt-[-10px] opacity-85 relative left-[-150px] lg:left-[0px] top-[-20px] rounded-2xl backdrop-blur"
+            style={{
+              background: '#979ACB',
+              boxShadow: `
+                -8.51px 8.51px 8.51px 0px #FFFFFF78 inset,
+                8.51px -8.51px 8.51px 0px #383A5178 inset
+              `,
+              backdropFilter: 'blur(217.066px)',
+              backgroundBlendMode: 'overlay',
+            }}
+          >
             <h1 className="text-3xl text-black px-7 pt-6 mb-23 lg:mb-5 relative after:content-[''] after:block after:w-[70px] after:h-[2px] after:bg-black">
               Inscreva-se
             </h1>
@@ -346,12 +365,12 @@ function Cadastro() {
         <div className="flex px-56 lg:px-20 gap-20 mb-25">
           <div className="flex flex-col mt-25 gap-4 items-center">
             <div className="flex flex-col gap-1">
-              <h1 className="text-3xl lg:text-2xl">FUNÇÕES</h1>
-              <h1 className="font-bold text-3xl lg:text-2xl">ORGANOTES</h1>
-              <p className="text-2xl lg:text-xl">
+              <h1 className="text-3xl">FUNÇÕES</h1>
+              <h1 className="font-bold text-3xl">ORGANOTES</h1>
+              <p className="text-2xl lg:text-lg">
                 Estude com as melhores ferramentas
               </p>
-              <p className="text-2xl lg:text-xl">
+              <p className="text-2xl lg:text-lg">
                 e alcance seu máximo potencial.
               </p>
             </div>
@@ -364,7 +383,7 @@ function Cadastro() {
           </div>
 
           <div className="flex gap-12 lg:gap-5 items-start">
-            <div className="flex flex-col items-center gap-5 py-10 bg-[#979ACB] text-[#FFF] rounded-2xl px-5 mt-40 w-[270px] shadow-2xl">
+            <div className="flex flex-col items-center gap-5 py-10 bg-[#979ACB] text-[#FFF] rounded-2xl px-5 mt-40 w-[270px] lg:w-[230px] shadow-2xl">
               <PersonStanding className="bg-black p-1 w-10 h-10 rounded-full" />
 
               <h1 className="text-2xl">Agenda</h1>
@@ -386,7 +405,7 @@ function Cadastro() {
               </a>
             </div>
 
-            <div className="flex flex-col items-center gap-5 py-10 bg-[#434561] text-[#FFF] rounded-2xl px-5 w-[270px] shadow-2xl">
+            <div className="flex flex-col items-center gap-5 py-10 bg-[#434561] text-[#FFF] rounded-2xl px-5 w-[270px] lg:w-[230px] shadow-2xl">
               <PersonStanding className="bg-[#FFF] text-black p-1 w-10 h-10 rounded-full" />
 
               <h1 className="text-2xl">Agenda</h1>
@@ -408,7 +427,7 @@ function Cadastro() {
               </a>
             </div>
 
-            <div className="flex flex-col items-center gap-5 py-10 bg-[#979ACB] text-[#FFF] rounded-2xl px-5 mt-40 w-[270px] shadow-2xl">
+            <div className="flex flex-col items-center gap-5 py-10 bg-[#979ACB] text-[#FFF] rounded-2xl px-5 mt-40 w-[270px] lg:w-[230px] shadow-2xl">
               <ListTodo className="text-[#434561] p-1 w-10 h-10" />
 
               <h1 className="text-2xl">Agenda</h1>
@@ -448,9 +467,9 @@ function Cadastro() {
             <div className="flex flex-col gap-1 justify-center">
               <h1 className="text-3xl">Compatível</h1>
               <h1 className="font-bold text-3xl">Desktop e Mobile</h1>
-              <p className="text-2xl">Telas intuitivas e adaptáveis para uma</p>
-              <p className="text-2xl">
-                experiência perfeita no desktop e mobile.
+              <p className="text-2xl lg:text-xl">
+                Telas intuitivas e adaptáveis para uma experiência perfeita no
+                desktop e mobile.
               </p>
             </div>
 
@@ -473,14 +492,14 @@ function Cadastro() {
             }}
           ></div>
 
-          <div className="absolute flex justify-center items-center gap-10 lg:gap-3">
+          <div className="absolute flex justify-center items-center gap-10 lg:gap-2">
             <img
               src="/calendario.png"
               alt="Calendário"
-              className="w-[650px] lg:w-[500px] h-auto relative -left-20"
+              className="w-[650px] lg:w-[400px] h-auto relative -left-20"
             />
 
-            <div className="flex flex-col items-center gap-2 relative -top-20">
+            <div className="flex flex-col items-center gap-2 relative -top-20 lg:-top-0">
               <img src="/frase.png" alt="Frase"></img>
 
               <a
@@ -506,7 +525,16 @@ function Cadastro() {
           </div>
 
           <div className="flex gap-20 mt-40 mb-30 justify-center items-start">
-            <div className="bg-[#CACCE5] h-[540px] w-[350px] relative flex flex-col rounded-3xl px-10 py-15 gap-6 shadow-lg">
+            <div
+              className="h-[540px] w-[350px] relative flex flex-col rounded-3xl px-10 py-15 gap-6 backdrop-blur"
+              style={{
+                background: '#979ACB', // cor base
+                backgroundBlendMode: 'overlay',
+                boxShadow:
+                  '-29.23px 29.23px 29.23px 0px #FFFFFF33 inset, 29.23px -29.23px 29.23px 0px #33344A33 inset',
+                backdropFilter: 'blur(79.5147px)',
+              }}
+            >
               <img
                 src="/etiqueta.png"
                 alt="etiqueta"
@@ -548,7 +576,19 @@ function Cadastro() {
               </div>
             </div>
 
-            <div className="bg-[#979ACD] h-[540px] w-[350px] relative flex flex-col rounded-3xl px-10 py-15 gap-6 shadow-lg">
+            <div
+              className="h-[540px] w-[350px] relative flex flex-col rounded-3xl px-10 py-15 gap-6 backdrop-blur"
+              style={{
+                background: '#343870', // cor base sólida
+                boxShadow: `
+                  0px 4px 4px 0px #00000040,
+                  -29.23px 29.23px 29.23px 0px #FFFFFF22 inset,
+                  29.23px -29.23px 29.23px 0px #33344A22 inset
+                `,
+                backdropFilter: 'blur(152.0133px)',
+                backgroundBlendMode: 'overlay',
+              }}
+            >
               <img
                 src="/etiqueta.png"
                 alt="etiqueta"
@@ -590,7 +630,16 @@ function Cadastro() {
               </div>
             </div>
 
-            <div className="bg-[#CACCE5] h-[540px] w-[350px] relative flex flex-col rounded-3xl px-10 py-15 gap-6 shadow-lg">
+            <div
+              className="h-[540px] w-[350px] relative flex flex-col rounded-3xl px-10 py-15 gap-6 backdrop-blur"
+              style={{
+                background: '#979ACB', // cor base
+                backgroundBlendMode: 'overlay',
+                boxShadow:
+                  '-29.23px 29.23px 29.23px 0px #FFFFFF33 inset, 29.23px -29.23px 29.23px 0px #33344A33 inset',
+                backdropFilter: 'blur(79.5147px)',
+              }}
+            >
               <img
                 src="/etiqueta.png"
                 alt="etiqueta"
@@ -625,6 +674,13 @@ function Cadastro() {
                     Relatórios de desempenho acadêmico
                   </p>
                 </div>
+              </div>
+              <div className="flex justify-end">
+                <img
+                  src="/user.png"
+                  alt="user"
+                  className="w-[170px] pl-3 object-contain"
+                />
               </div>
             </div>
           </div>
@@ -774,7 +830,7 @@ function Cadastro() {
             </div>
           </div>
         </footer>
-      </main>
+      </div>
     </>
   );
 }

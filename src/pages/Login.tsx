@@ -19,7 +19,7 @@ import { Link } from 'react-router-dom';
 function Login() {
   const navigate = useNavigate();
 
-  const [isPasswordVisible, setIsPasswordVisible] = useState(false);
+  const [isPasswordVisible] = useState(false);
   const [emailInput, setEmailInput] = useState('');
   const [passwordInput, setPasswordInput] = useState('');
   const [thereIsError, setThereIsError] = useState(false);
@@ -45,7 +45,7 @@ function Login() {
       localStorage.setItem('token', response.data.accessToken);
       console.log('Token armazenado:', response.data.accessToken);
 
-      navigate('/activitiesPage/page');
+      navigate('/Calendar');
     } catch (error: any) {
       console.error(error.message);
       alert(`Erro no login: ${error.message}`);
@@ -186,7 +186,18 @@ function Login() {
             </div>
           </div>
 
-          <div className="w-[400px] bg-[#434561C7] lg:mt-[-60px] opacity-85 relative left-[-150px] top-[-20px] rounded-2xl">
+          <div
+            className="w-[400px] lg:mt-[-60px] opacity-85 relative left-[-90px] top-[-20px] rounded-2xl"
+            style={{
+              background: '#979ACB',
+              boxShadow: `
+                -8.51px 8.51px 8.51px 0px #FFFFFF78 inset,
+                8.51px -8.51px 8.51px 0px #383A5178 inset
+              `,
+              backdropFilter: 'blur(217.066px)',
+              backgroundBlendMode: 'overlay',
+            }}
+          >
             <h1 className="text-3xl text-black px-7 pt-6 mb-23 lg:mb-15 relative after:content-[''] after:block after:w-[70px] after:h-[2px] after:bg-black">
               Login
             </h1>
@@ -308,12 +319,12 @@ function Login() {
         <div className="flex px-56 lg:px-20 gap-20 mb-25">
           <div className="flex flex-col mt-25 gap-4 items-center">
             <div className="flex flex-col gap-1">
-              <h1 className="text-3xl lg:text-2xl">FUNÇÕES</h1>
-              <h1 className="font-bold text-3xl lg:text-2xl">ORGANOTES</h1>
-              <p className="text-2xl lg:text-xl">
+              <h1 className="text-3xl">FUNÇÕES</h1>
+              <h1 className="font-bold text-3xl">ORGANOTES</h1>
+              <p className="text-2xl lg:text-lg">
                 Estude com as melhores ferramentas
               </p>
-              <p className="text-2xl lg:text-xl">
+              <p className="text-2xl lg:text-lg">
                 e alcance seu máximo potencial.
               </p>
             </div>
@@ -326,7 +337,7 @@ function Login() {
           </div>
 
           <div className="flex gap-12 lg:gap-5 items-start">
-            <div className="flex flex-col items-center gap-5 py-10 bg-[#979ACB] text-[#FFF] rounded-2xl px-5 mt-40 w-[270px] shadow-2xl">
+            <div className="flex flex-col items-center gap-5 py-10 bg-[#979ACB] text-[#FFF] rounded-2xl px-5 mt-40 w-[270px] lg:w-[230px] shadow-2xl">
               <PersonStanding className="bg-black p-1 w-10 h-10 rounded-full" />
 
               <h1 className="text-2xl">Agenda</h1>
@@ -348,7 +359,7 @@ function Login() {
               </a>
             </div>
 
-            <div className="flex flex-col items-center gap-5 py-10 bg-[#434561] text-[#FFF] rounded-2xl px-5 w-[270px] shadow-2xl">
+            <div className="flex flex-col items-center gap-5 py-10 bg-[#434561] text-[#FFF] rounded-2xl px-5 w-[270px] lg:w-[230px] shadow-2xl">
               <PersonStanding className="bg-[#FFF] text-black p-1 w-10 h-10 rounded-full" />
 
               <h1 className="text-2xl">Agenda</h1>
@@ -370,7 +381,7 @@ function Login() {
               </a>
             </div>
 
-            <div className="flex flex-col items-center gap-5 py-10 bg-[#979ACB] text-[#FFF] rounded-2xl px-5 mt-40 w-[270px] shadow-2xl">
+            <div className="flex flex-col items-center gap-5 py-10 bg-[#979ACB] text-[#FFF] rounded-2xl px-5 mt-40 w-[270px] lg:w-[230px] shadow-2xl">
               <ListTodo className="text-[#434561] p-1 w-10 h-10" />
 
               <h1 className="text-2xl">Agenda</h1>
@@ -410,9 +421,9 @@ function Login() {
             <div className="flex flex-col gap-1 justify-center">
               <h1 className="text-3xl">Compatível</h1>
               <h1 className="font-bold text-3xl">Desktop e Mobile</h1>
-              <p className="text-2xl">Telas intuitivas e adaptáveis para uma</p>
-              <p className="text-2xl">
-                experiência perfeita no desktop e mobile.
+              <p className="text-2xl lg:text-xl">
+                Telas intuitivas e adaptáveis para uma experiência perfeita no
+                desktop e mobile.
               </p>
             </div>
 
@@ -435,14 +446,14 @@ function Login() {
             }}
           ></div>
 
-          <div className="absolute flex justify-center items-center gap-10 lg:gap-3">
+          <div className="absolute flex justify-center items-center gap-10 lg:gap-2">
             <img
               src="/calendario.png"
               alt="Calendário"
-              className="w-[650px] lg:w-[500px] h-auto relative -left-20"
+              className="w-[650px] lg:w-[400px] h-auto relative -left-20"
             />
 
-            <div className="flex flex-col items-center gap-2 relative -top-20">
+            <div className="flex flex-col items-center gap-2 relative -top-20 lg:-top-0">
               <img src="/frase.png" alt="Frase"></img>
 
               <a
@@ -468,7 +479,16 @@ function Login() {
           </div>
 
           <div className="flex gap-20 mt-40 mb-30 justify-center items-start">
-            <div className="bg-[#CACCE5] h-[540px] w-[350px] relative flex flex-col rounded-3xl px-10 py-15 gap-6 shadow-lg">
+            <div
+              className="h-[540px] w-[350px] relative flex flex-col rounded-3xl px-10 py-15 gap-6 backdrop-blur"
+              style={{
+                background: '#979ACB', // cor base
+                backgroundBlendMode: 'overlay',
+                boxShadow:
+                  '-29.23px 29.23px 29.23px 0px #FFFFFF33 inset, 29.23px -29.23px 29.23px 0px #33344A33 inset',
+                backdropFilter: 'blur(79.5147px)',
+              }}
+            >
               <img
                 src="/etiqueta.png"
                 alt="etiqueta"
@@ -510,7 +530,19 @@ function Login() {
               </div>
             </div>
 
-            <div className="bg-[#979ACD] h-[540px] w-[350px] relative flex flex-col rounded-3xl px-10 py-15 gap-6 shadow-lg">
+            <div
+              className="h-[540px] w-[350px] relative flex flex-col rounded-3xl px-10 py-15 gap-6 backdrop-blur"
+              style={{
+                background: '#343870', // cor base sólida
+                boxShadow: `
+                  0px 4px 4px 0px #00000040,
+                  -29.23px 29.23px 29.23px 0px #FFFFFF22 inset,
+                  29.23px -29.23px 29.23px 0px #33344A22 inset
+                `,
+                backdropFilter: 'blur(152.0133px)',
+                backgroundBlendMode: 'overlay',
+              }}
+            >
               <img
                 src="/etiqueta.png"
                 alt="etiqueta"
@@ -552,7 +584,16 @@ function Login() {
               </div>
             </div>
 
-            <div className="bg-[#CACCE5] h-[540px] w-[350px] relative flex flex-col rounded-3xl px-10 py-15 gap-6 shadow-lg">
+            <div
+              className="h-[540px] w-[350px] relative flex flex-col rounded-3xl px-10 py-15 gap-6 backdrop-blur"
+              style={{
+                background: '#979ACB', // cor base
+                backgroundBlendMode: 'overlay',
+                boxShadow:
+                  '-29.23px 29.23px 29.23px 0px #FFFFFF33 inset, 29.23px -29.23px 29.23px 0px #33344A33 inset',
+                backdropFilter: 'blur(79.5147px)',
+              }}
+            >
               <img
                 src="/etiqueta.png"
                 alt="etiqueta"
@@ -587,6 +628,13 @@ function Login() {
                     Relatórios de desempenho acadêmico
                   </p>
                 </div>
+              </div>
+              <div className="flex justify-end">
+                <img
+                  src="/user.png"
+                  alt="user"
+                  className="w-[170px] pl-3 object-contain"
+                />
               </div>
             </div>
           </div>
