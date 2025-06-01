@@ -11,11 +11,56 @@ import {
   Menu,
   Plus,
 } from 'lucide-react';
-import { format } from 'date-fns';
+import { format, addDays, startOfWeek } from 'date-fns';
 import { ptBR } from 'date-fns/locale/pt-BR';
 import { motion, AnimatePresence } from 'framer-motion';
 
 function Calendar() {
+  type Evento = {
+    titulo: string;
+    dia: number; // 0 a 6 (Seg a Dom)
+    hora: string; // formato "HH:00"
+  };
+
+  const [eventos, setEventos] = useState<Evento[]>([]);
+
+  const [mostrarFormulario, setMostrarFormulario] = useState(false);
+  const [tituloEvento, setTituloEvento] = useState('');
+  const [diaEvento, setDiaEvento] = useState('0'); // 0 = Segunda
+  const [horaEvento, setHoraEvento] = useState('07:00');
+
+  const handleSalvarEvento = () => {
+    const horaValida = /^([0-9]{2}):([0-9]{2})$/.test(horaEvento);
+    const [h, m] = horaEvento.split(':').map(Number);
+
+    if (!tituloEvento.trim()) {
+      alert('Digite um título para o evento.');
+      return;
+    }
+
+    if (!horaValida || h < 5 || h > 23 || (h === 23 && m > 0)) {
+      alert('A hora deve estar entre 05:00 e 23:00.');
+      return;
+    }
+
+    setEventos([
+      ...eventos,
+      {
+        titulo: tituloEvento,
+        dia: parseInt(diaEvento, 10),
+        hora: horaEvento,
+      },
+    ]);
+
+    // Resetar e fechar modal
+    setTituloEvento('');
+    setDiaEvento('0');
+    setHoraEvento('07:00');
+    setMostrarFormulario(false);
+  };
+
+  const [termoBusca, setTermoBusca] = useState('');
+
   const [isOpen, setIsOpen] = useState(false);
 
   const [open, setOpen] = useState(false);
@@ -27,9 +72,10 @@ function Calendar() {
   const [view, setView] = useState<'semana' | 'mes' | 'ano'>('semana');
 
   const hours = Array.from(
-    { length: 12 },
-    (_, i) => `${i.toString().padStart(2, '0')}:00`,
+    { length: 17 }, // de 05:00 até 23:00 => 19 horas
+    (_, i) => `${(i + 7).toString().padStart(2, '0')}:00`,
   );
+
   const days = [
     { label: 'Seg', emoji: '🧘‍♂️' },
     { label: 'Ter', emoji: '☕' },
@@ -38,6 +84,16 @@ function Calendar() {
     { label: 'Sex', emoji: '🍸' },
     { label: 'Sáb', emoji: '🎨' },
     { label: 'Dom', emoji: '🐱' },
+  ];
+
+  const coresDias = [
+    'bg-orange-300', // Seg
+    'bg-blue-300', // Ter
+    'bg-yellow-300', // Qua
+    'bg-green-300', // Qui
+    'bg-pink-300', // Sex
+    'bg-purple-300', // Sáb
+    'bg-red-300', // Dom
   ];
 
   const dataAtual = new Date();
@@ -62,12 +118,22 @@ function Calendar() {
       return format(dataAtual, 'yyyy', { locale: ptBR });
     }
   };
+
+  const datasDaSemana = Array.from({ length: 7 }, (_, i) => {
+    const inicioSemana = startOfWeek(dataAtual, { weekStartsOn: 1 });
+    const data = addDays(inicioSemana, i);
+    return {
+      diaIndex: i,
+      label: format(data, 'EEEE - dd/MM', { locale: ptBR }),
+      data,
+    };
+  });
   return (
     <>
       <main className="flex">
         {/* Menu */}
         <div
-          className="flex flex-col justify-between gap-4 h-screen w-[300px] bg-cover bg-center"
+          className="fixed flex flex-col justify-between gap-4 h-screen w-[300px] bg-cover bg-center"
           style={{
             backgroundImage: "url('/menu.png')",
           }}
@@ -128,13 +194,54 @@ function Calendar() {
               </button>
 
               <div
-                className={`overflow-hidden transition-all duration-500 ease-in-out ${
-                  isOpen ? 'max-h-40 opacity-100 mt-2' : 'max-h-0 opacity-0'
-                } bg-[#2d2f45] rounded-xl px-4`}
+                className={`transition-all duration-500 ease-in-out overflow-y-auto rounded-2xl ${
+                  isOpen ? 'opacity-100 mt-2' : 'opacity-0'
+                }`}
+                style={{
+                  maxHeight: isOpen ? '240px' : '0px', // ← Altura original restaurada
+                  background:
+                    'linear-gradient(180deg, rgba(71,72,120,0.9), rgba(122,123,194,0.7))',
+                  backdropFilter: 'blur(10px)',
+                  WebkitBackdropFilter: 'blur(10px)',
+                  transition:
+                    'max-height 0.5s ease-in-out, opacity 0.5s ease-in-out',
+                }}
               >
-                <div className="py-4">
-                  {/* Conteúdo adicional */}
-                  <p>Conteúdo adicional do calendário.</p>
+                <div className="py-4 px-4">
+                  {datasDaSemana.map(({ diaIndex, label }) => {
+                    const eventosDoDia = eventos
+                      .filter((e) => e.dia === diaIndex)
+                      .sort((a, b) => {
+                        const horaA = parseInt(a.hora.split(':')[0], 10);
+                        const horaB = parseInt(b.hora.split(':')[0], 10);
+                        return horaA - horaB;
+                      });
+
+                    return (
+                      <div key={diaIndex} className="mb-4">
+                        <h2 className="text-sm font-semibold text-white mb-1">
+                          {label}
+                        </h2>
+
+                        {eventosDoDia.length > 0 ? (
+                          <ul className="ml-2 text-gray-300 text-sm list-disc">
+                            {eventosDoDia.map((evento, idx) => (
+                              <li key={idx}>
+                                <span className="font-medium">
+                                  {evento.hora}
+                                </span>{' '}
+                                - {evento.titulo}
+                              </li>
+                            ))}
+                          </ul>
+                        ) : (
+                          <p className="text-gray-500 text-xs ml-2">
+                            Sem tarefas
+                          </p>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             </div>
@@ -186,13 +293,19 @@ function Calendar() {
         </div>
 
         {/* Calendário */}
-        <div className="flex flex-col gap-2 w-full">
+        <div
+          className={`flex flex-col gap-2 w-full ml-[300px] ${
+            darkMode ? 'bg-[#1f1f2e] text-white' : 'bg-white text-gray-800'
+          }`}
+        >
           <div className="flex justify-between">
             <div className="flex px-6 py-4 gap-4 items-center">
               <Menu className="w-5 h-5" />
 
               {/* Texto da data */}
-              <span className="text-2xl text-gray-700">
+              <span
+                className={`text-2xl ${darkMode ? 'text-white' : 'text-gray-700'}`}
+              >
                 {getFormattedDate()}
               </span>
 
@@ -230,24 +343,123 @@ function Calendar() {
                     transition={{ duration: 0.3 }}
                     type="text"
                     placeholder="Pesquisar..."
+                    value={termoBusca}
+                    onChange={(e) => setTermoBusca(e.target.value)}
                     className="px-3 py-2 border border-gray-300 rounded-lg text-sm outline-none"
                   />
                 )}
               </AnimatePresence>
 
+              {/* Botão para abrir formulário */}
               <button
-                onClick={() => console.log('Adicionar Evento clicado')}
+                onClick={() => setMostrarFormulario(true)}
                 className="flex items-center gap-3 bg-[#434561] py-2 px-3 rounded-lg transition-all duration-300 hover:bg-[#5a5c7a] hover:shadow-md cursor-pointer"
               >
                 <span className="text-white">Adicionar Evento</span>
                 <Plus className="bg-white text-[#434561] rounded-full w-5 h-5 p-1" />
               </button>
+
+              {/* Modal com formulário */}
+              {mostrarFormulario && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+                  <div
+                    className={`p-6 rounded shadow-lg w-80 ${
+                      darkMode
+                        ? 'bg-[#1f2130] text-white'
+                        : 'bg-white text-black'
+                    }`}
+                  >
+                    <h2 className="text-lg font-semibold mb-4">
+                      Adicionar Evento
+                    </h2>
+
+                    <div className="flex flex-col gap-3 text-sm">
+                      <div className="flex flex-col">
+                        <label htmlFor="titulo">Título</label>
+                        <input
+                          id="titulo"
+                          type="text"
+                          value={tituloEvento}
+                          onChange={(e) => setTituloEvento(e.target.value)}
+                          className={`p-1 rounded border ${
+                            darkMode
+                              ? 'bg-[#2f3146] text-white border-[#555774]'
+                              : 'bg-white text-black border-[#DADCE0]'
+                          }`}
+                          required
+                        />
+                      </div>
+
+                      <div className="flex flex-col">
+                        <label htmlFor="dia">Dia da Semana</label>
+                        <select
+                          id="dia"
+                          value={diaEvento}
+                          onChange={(e) => setDiaEvento(e.target.value)}
+                          className={`p-1 rounded border ${
+                            darkMode
+                              ? 'bg-[#2f3146] text-white border-[#555774]'
+                              : 'bg-white text-black border-[#DADCE0]'
+                          }`}
+                        >
+                          <option value="0">Segunda</option>
+                          <option value="1">Terça</option>
+                          <option value="2">Quarta</option>
+                          <option value="3">Quinta</option>
+                          <option value="4">Sexta</option>
+                          <option value="5">Sábado</option>
+                          <option value="6">Domingo</option>
+                        </select>
+                      </div>
+
+                      <div className="flex flex-col">
+                        <label htmlFor="hora">Hora</label>
+                        <input
+                          id="hora"
+                          type="time"
+                          value={horaEvento}
+                          onChange={(e) => setHoraEvento(e.target.value)}
+                          className={`p-1 rounded border ${
+                            darkMode
+                              ? 'bg-[#2f3146] text-white border-[#555774]'
+                              : 'bg-white text-black border-[#DADCE0]'
+                          }`}
+                          min="05:00"
+                          max="23:00"
+                          required
+                        />
+                      </div>
+
+                      <div className="flex justify-between mt-3">
+                        <button
+                          onClick={() => setMostrarFormulario(false)}
+                          className="text-red-500 hover:underline"
+                        >
+                          Cancelar
+                        </button>
+                        <button
+                          onClick={handleSalvarEvento}
+                          className="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700"
+                        >
+                          Salvar
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 
           <div className="flex flex-col w-full h-full">
             {/* Cabeçalho com emojis ao lado dos dias */}
-            <div className="grid grid-cols-8 bg-white text-gray-800 text-center text-sm font-medium border-b border-gray-300">
+            <div
+              className={`grid grid-cols-8 text-center text-sm font-medium border-b ${
+                darkMode
+                  ? 'bg-[#2a2b3d] text-white border-gray-700'
+                  : 'bg-white text-gray-800 border-gray-300'
+              }`}
+            >
               <div className="p-1"></div>
               {days.map((day, index) => (
                 <div key={index} className="px-2 py-1">
@@ -264,21 +476,58 @@ function Calendar() {
               {hours.map((hour, rowIndex) => (
                 <React.Fragment key={rowIndex}>
                   {/* Label da hora */}
-                  <div className="bg-white text-black text-center p-1 border border-gray-300">
+                  <div
+                    className={`text-center p-1 border ${
+                      darkMode
+                        ? 'bg-[#2f3148] text-white border-gray-700'
+                        : 'bg-white text-black border-gray-300'
+                    }`}
+                  >
                     {hour}
                   </div>
 
                   {/* Células do calendário */}
-                  {days.map((_, colIndex) => (
-                    <div
-                      key={`${rowIndex}-${colIndex}`}
-                      className={`border border-gray-200 h-12 ${
-                        colIndex === 5 || colIndex === 6
-                          ? 'bg-gray-100'
-                          : 'bg-white'
-                      }`}
-                    ></div>
-                  ))}
+                  {days.map((_, colIndex) => {
+                    const eventosCelula = eventos.filter(
+                      (e) => e.dia === colIndex && e.hora === hour,
+                    );
+
+                    return (
+                      <div
+                        key={`${rowIndex}-${colIndex}`}
+                        className={`relative border h-12 px-1 py-0.5 overflow-hidden ${
+                          darkMode
+                            ? colIndex === 5 || colIndex === 6
+                              ? 'bg-[#2e2e3f] border-gray-700'
+                              : 'bg-[#252638] border-gray-700'
+                            : colIndex === 5 || colIndex === 6
+                              ? 'bg-gray-100 border-gray-200'
+                              : 'bg-white border-gray-200'
+                        }`}
+                      >
+                        {eventosCelula.map((evento, idx) => (
+                          <div
+                            key={idx}
+                            className={`mb-1 px-2 py-1 rounded-md text-[11px] font-medium shadow-sm ${
+                              darkMode ? 'text-white' : 'text-gray-800'
+                            } ${coresDias[colIndex]} ${
+                              termoBusca &&
+                              evento.titulo
+                                .toLowerCase()
+                                .includes(termoBusca.toLowerCase())
+                                ? 'ring-2 ring-green-500 scale-[1.02]'
+                                : ''
+                            }`}
+                          >
+                            <div className="text-[10px] font-semibold">
+                              {evento.hora}
+                            </div>
+                            <div>{evento.titulo}</div>
+                          </div>
+                        ))}
+                      </div>
+                    );
+                  })}
                 </React.Fragment>
               ))}
             </div>

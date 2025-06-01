@@ -56,19 +56,7 @@ function Login() {
 
   return (
     <>
-      <div className="relative bg-[#F1F3FE] min-h-[500px] overflow-x-hidden">
-        {/* Traço Inferior - Background */}
-        <div
-          className="absolute inset-0 bg-cover bg-no-repeat -z-10"
-          style={{
-            backgroundImage: "url('/bg-2.png')",
-            backgroundSize: 'contain',
-            backgroundPosition: '0px -10px',
-            height: '100vh',
-            width: '100%',
-          }}
-        ></div>
-
+      <div className="relative bg-[#F1F3FE] min-h-[500px]">
         {/* Cabeçalho */}
         <header className="relative z-10 pt-8 px-56 lg:px-20">
           {/* Traço Superior - canto superior esquerdo */}
@@ -145,7 +133,7 @@ function Login() {
         </header>
 
         {/* Parte de Login */}
-        <nav className="relative z-0 px-56 lg:px-20 mt-[200px] lg:mt-[150px] mx-auto flex justify-between">
+        <nav className="relative z-0 px-56 lg:px-20 mt-[200px] lg:mt-[150px] flex justify-between">
           <div
             className="absolute inset-0 bg-no-repeat -z-10"
             style={{
@@ -468,17 +456,25 @@ function Login() {
 
         {/* Planos - OrgaNotes*/}
         <div className="flex flex-col">
-          <div className="flex">
-            <div className="mt-80 px-56">
-              <img src="/frase-estudo.png" alt="frase estudo"></img>
+          <div className="relative w-full h-screen">
+            {/* Frase no canto superior esquerdo */}
+            <div className="absolute top-40 left-40 z-10">
+              <img
+                src="/frase-estudo.png"
+                alt="frase estudo"
+                className="w-[500px]"
+              />
             </div>
 
-            <div className="mt-20 mr-10">
-              <img src="/mao.png" alt="mão"></img>
-            </div>
+            {/* Imagem da mão + onda deslocada levemente para baixo */}
+            <img
+              src="/frame-203.png"
+              alt="fundo com mão"
+              className="absolute bottom-0 left-0 w-full h-auto z-0 translate-y-50"
+            />
           </div>
 
-          <div className="flex gap-20 mt-40 mb-30 justify-center items-start">
+          <div className="flex gap-20 mt-70 mb-30 justify-center items-start">
             <div
               className="h-[540px] w-[350px] relative flex flex-col rounded-3xl px-10 py-15 gap-6 backdrop-blur"
               style={{

@@ -56,7 +56,7 @@ function Cadastro() {
       console.log('Cadastro realizado:', response.data);
 
       // Redirecionar para tela de login ou dashboard
-      navigate('/login');
+      navigate('/Calendar');
     } catch (error: any) {
       console.error(error.message);
       alert(`Erro ao cadastrar: ${error.message}`);
@@ -514,17 +514,25 @@ function Cadastro() {
 
         {/* Planos - OrgaNotes*/}
         <div className="flex flex-col">
-          <div className="flex">
-            <div className="mt-80 px-56">
-              <img src="/frase-estudo.png" alt="frase estudo"></img>
+          <div className="relative w-full h-screen">
+            {/* Frase no canto superior esquerdo */}
+            <div className="absolute top-40 left-40 z-10">
+              <img
+                src="/frase-estudo.png"
+                alt="frase estudo"
+                className="w-[500px]"
+              />
             </div>
 
-            <div className="mt-20 mr-10">
-              <img src="/mao.png" alt="mão"></img>
-            </div>
+            {/* Imagem da mão + onda deslocada levemente para baixo */}
+            <img
+              src="/frame-203.png"
+              alt="fundo com mão"
+              className="absolute bottom-0 left-0 w-full h-auto z-0 translate-y-50"
+            />
           </div>
 
-          <div className="flex gap-20 mt-40 mb-30 justify-center items-start">
+          <div className="flex gap-20 mt-70 mb-30 justify-center items-start">
             <div
               className="h-[540px] w-[350px] relative flex flex-col rounded-3xl px-10 py-15 gap-6 backdrop-blur"
               style={{

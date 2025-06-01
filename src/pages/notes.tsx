@@ -9,6 +9,8 @@ import {
   Menu,
   Plus,
   NotebookPen,
+  Pencil,
+  Trash,
 } from 'lucide-react';
 
 function Notes() {
@@ -23,6 +25,53 @@ function Notes() {
 
   const [note, setNote] = useState('Anote aqui...');
   const [isEditingNote, setIsEditingNote] = useState(false);
+
+  const [savedNotes, setSavedNotes] = useState<
+    { title: string; note: string; date: string }[]
+  >([]);
+
+  const [selectedNote, setSelectedNote] = useState<null | {
+    title: string;
+    note: string;
+    date: string;
+  }>(null);
+
+  const saveNote = () => {
+    if (!title.trim()) {
+      alert('Você precisa preencher um título para salvar a nota.');
+      return;
+    }
+
+    const today = new Date().toLocaleDateString('pt-BR'); // ex: 26/05/2025
+    const newNote = { title: title.trim(), note: note.trim(), date: today };
+
+    setSavedNotes((prevNotes) => {
+      const existingIndex = prevNotes.findIndex(
+        (n) => n.title === newNote.title && n.date === newNote.date,
+      );
+
+      if (existingIndex !== -1) {
+        // Atualiza a nota existente
+        const updatedNotes = [...prevNotes];
+        updatedNotes[existingIndex] = newNote;
+        return updatedNotes;
+      }
+
+      // Cria nova nota
+      return [...prevNotes, newNote];
+    });
+
+    setSelectedNote(newNote);
+    setTitle('');
+    setNote('');
+    setIsEditingNote(false);
+    setIsEditingTitle(false);
+  };
+
+  const [noteToDelete, setNoteToDelete] = useState<null | {
+    title: string;
+    date: string;
+  }>(null);
 
   return (
     <>
@@ -82,24 +131,152 @@ function Notes() {
                 className="px-2 flex items-center gap-2 focus:outline-none"
               >
                 <ChevronRight
-                  className={`transition-transform duration-300 ${
-                    isOpen ? 'rotate-90' : ''
-                  }`}
+                  className={`transition-transform duration-300 ${isOpen ? 'rotate-90' : ''}`}
                 />
                 <NotebookPen />
                 <h1 className="text-2xl">Notas</h1>
               </button>
 
               <div
-                className={`overflow-hidden transition-all duration-500 ease-in-out ${
-                  isOpen ? 'max-h-40 opacity-100 mt-2' : 'max-h-0 opacity-0'
-                } bg-[#2d2f45] rounded-xl px-4`}
+                className={`transition-all duration-500 ease-in-out rounded-2xl ${
+                  isOpen ? 'opacity-100 mt-2' : 'opacity-0'
+                }`}
+                style={{
+                  maxHeight: isOpen ? '500px' : '0px',
+                  overflowY: 'auto',
+                  background:
+                    'linear-gradient(180deg, rgba(71,72,120,0.9), rgba(122,123,194,0.7))',
+                  backdropFilter: 'blur(10px)',
+                  WebkitBackdropFilter: 'blur(10px)',
+                  transition:
+                    'max-height 0.5s ease-in-out, opacity 0.5s ease-in-out',
+                }}
               >
-                <div className="py-4">
-                  {/* Conteúdo adicional */}
-                  <p>Conteúdo adicional do calendário.</p>
+                <div className="py-4 px-4 text-sm space-y-3">
+                  {savedNotes.length === 0 ? (
+                    <p className="text-gray-300 text-center">
+                      Nenhuma nota salva.
+                    </p>
+                  ) : (
+                    Object.entries(
+                      savedNotes.reduce(
+                        (acc, note) => {
+                          if (!acc[note.date]) acc[note.date] = [];
+                          acc[note.date].push(note);
+                          return acc;
+                        },
+                        {} as Record<
+                          string,
+                          { title: string; note: string; date: string }[]
+                        >,
+                      ),
+                    ).map(([date, notes], index) => (
+                      <div key={index}>
+                        <p className="text-xs text-gray-200 mb-1">{date}</p>
+                        <ul className="space-y-1 pl-2 list-disc list-inside text-white">
+                          {notes.map((noteItem, idx) => (
+                            <li
+                              key={idx}
+                              className={`truncate cursor-pointer px-2 py-1 rounded-md transition-all duration-200 flex justify-between items-center ${
+                                selectedNote?.title === noteItem.title &&
+                                selectedNote?.date === noteItem.date
+                                  ? 'bg-[#3b3d5c] font-semibold text-blue-300'
+                                  : 'hover:text-blue-300'
+                              }`}
+                            >
+                              <span
+                                onClick={() => {
+                                  setSelectedNote(noteItem);
+                                  setTitle(noteItem.title);
+                                  setNote(noteItem.note);
+                                  setIsEditingNote(false);
+                                  setIsEditingTitle(false);
+                                }}
+                                className="flex-1 truncate"
+                              >
+                                {noteItem.title}
+                              </span>
+
+                              {selectedNote?.title === noteItem.title &&
+                                selectedNote?.date === noteItem.date && (
+                                  <div className="flex items-center gap-2 ml-2">
+                                    <button
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        setIsEditingTitle(true);
+                                      }}
+                                      className="text-blue-300 hover:text-blue-400"
+                                    >
+                                      <Pencil size={14} />
+                                    </button>
+                                    <button
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        setNoteToDelete({
+                                          title: noteItem.title,
+                                          date: noteItem.date,
+                                        });
+                                      }}
+                                      className="text-red-400 hover:text-red-500"
+                                    >
+                                      <Trash size={14} />
+                                    </button>
+                                  </div>
+                                )}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    ))
+                  )}
                 </div>
               </div>
+
+              {noteToDelete && (
+                <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50 px-4">
+                  <div className="bg-white rounded-xl p-6 w-full max-w-sm text-center shadow-lg">
+                    <h2 className="text-lg font-semibold text-gray-800 mb-4">
+                      Excluir nota?
+                    </h2>
+                    <p className="text-sm text-gray-600 mb-6 break-words">
+                      Tem certeza que deseja excluir a nota:
+                      <br />
+                      <span className="font-semibold text-gray-900 block mt-1 max-h-20 overflow-y-auto break-words">
+                        “{noteToDelete.title}”
+                      </span>
+                    </p>
+
+                    <div className="flex justify-center gap-4">
+                      <button
+                        onClick={() => setNoteToDelete(null)}
+                        className="px-4 py-2 rounded-md bg-gray-200 hover:bg-gray-300 text-gray-800"
+                      >
+                        Cancelar
+                      </button>
+                      <button
+                        onClick={() => {
+                          setSavedNotes((prev) =>
+                            prev.filter(
+                              (n) =>
+                                !(
+                                  n.title === noteToDelete.title &&
+                                  n.date === noteToDelete.date
+                                ),
+                            ),
+                          );
+                          setSelectedNote(null);
+                          setTitle('');
+                          setNote('');
+                          setNoteToDelete(null);
+                        }}
+                        className="px-4 py-2 rounded-md bg-red-500 hover:bg-red-600 text-white"
+                      >
+                        Excluir
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 
@@ -148,65 +325,111 @@ function Notes() {
           </div>
         </div>
 
-        <div className="flex flex-col gap-2 w-full px-6 pb-7">
-          <div className="flex justify-between">
-            <div className="flex py-4 gap-4 items-center">
-              <Menu className="w-5 h-5" />
+        <div
+          className={`${darkMode ? 'bg-[#1f2130] text-white' : 'bg-white text-black'} min-h-screen w-full`}
+        >
+          <div className="flex flex-col gap-2 w-full px-6 pb-7">
+            <div className="flex justify-between">
+              <div className="flex py-4 gap-4 items-center">
+                <Menu className="w-5 h-5" />
 
-              <div className="flex items-center gap-1">
-                <NotebookPen />
-                <span className="text-2xl">Notas</span>
+                <div className="flex items-center gap-1">
+                  <NotebookPen />
+                  <span className="text-2xl">Notas</span>
+                </div>
+              </div>
+
+              <div className="flex gap-3 items-center">
+                <button
+                  onClick={() => {
+                    setTitle('');
+                    setNote('');
+                    setSelectedNote(null);
+                    setIsEditingTitle(true);
+                    setIsEditingNote(true);
+                  }}
+                  className="flex items-center gap-3 bg-[#434561] py-2 px-3 rounded-lg transition-all duration-300 hover:bg-[#5a5c7a] hover:shadow-md cursor-pointer"
+                >
+                  <span className="text-white">Adicionar Notas</span>
+                  <Plus className="bg-white text-[#434561] rounded-full w-5 h-5 p-1" />
+                </button>
               </div>
             </div>
 
-            <div className="flex gap-3 items-center">
-              <button
-                onClick={() => console.log('Adicionar Evento clicado')}
-                className="flex items-center gap-3 bg-[#434561] py-2 px-3 rounded-lg transition-all duration-300 hover:bg-[#5a5c7a] hover:shadow-md cursor-pointer"
-              >
-                <span className="text-white">Adicionar Notas</span>
-                <Plus className="bg-white text-[#434561] rounded-full w-5 h-5 p-1" />
-              </button>
+            <div
+              className={`flex flex-col px-10 pt-9 h-full rounded space-y-2 border ${
+                darkMode
+                  ? 'bg-[#2f3146] border-[#555774]'
+                  : 'bg-white border-[#DADCE0]'
+              }`}
+            >
+              {/* TÍTULO */}
+              {isEditingTitle ? (
+                <input
+                  // ...
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  onBlur={() => setIsEditingTitle(false)}
+                  autoFocus
+                />
+              ) : (
+                <span
+                  className={`text-3xl font-semibold cursor-pointer ${darkMode ? 'text-white' : 'text-black'}`}
+                  onClick={() => {
+                    if (selectedNote) {
+                      setTitle(selectedNote.title);
+                      setNote(selectedNote.note);
+                      setSelectedNote(null); // sair do modo "visualização"
+                    } else {
+                      setIsEditingTitle(true);
+                    }
+                  }}
+                >
+                  {selectedNote ? selectedNote.title : title || 'Sem título'}
+                </span>
+              )}
+
+              {/* ANOTAÇÃO COM PLACEHOLDER */}
+              {isEditingNote || note ? (
+                <textarea
+                  // ...
+                  value={note}
+                  onChange={(e) => setNote(e.target.value)}
+                  onBlur={() => setIsEditingNote(false)}
+                  placeholder="Anote aqui..."
+                  autoFocus
+                />
+              ) : (
+                <span
+                  className={`cursor-pointer ${darkMode ? 'text-gray-400' : 'text-[#B1B1B1]'}`}
+                  onClick={() => {
+                    if (selectedNote) {
+                      setTitle(selectedNote.title);
+                      setNote(selectedNote.note);
+                      setSelectedNote(null); // volta a editar
+                    } else {
+                      setIsEditingNote(true);
+                    }
+                  }}
+                >
+                  {selectedNote
+                    ? selectedNote.note || 'Sem conteúdo'
+                    : note || 'Anote aqui...'}
+                </span>
+              )}
             </div>
-          </div>
 
-          <div className="flex flex-col border border-[#DADCE0] px-10 pt-9 h-full rounded space-y-2">
-            {/* TÍTULO */}
-            {isEditingTitle ? (
-              <input
-                className="text-3xl font-semibold outline-none border-b border-gray-300 focus:border-black"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                onBlur={() => setIsEditingTitle(false)}
-                autoFocus
-              />
-            ) : (
-              <span
-                className="text-3xl font-semibold cursor-pointer"
-                onClick={() => setIsEditingTitle(true)}
-              >
-                {title}
-              </span>
-            )}
-
-            {/* ANOTAÇÃO COM PLACEHOLDER */}
-            {isEditingNote || note ? (
-              <textarea
-                className="text-black outline-none border-b border-gray-300 focus:border-black resize-none"
-                value={note}
-                onChange={(e) => setNote(e.target.value)}
-                onBlur={() => setIsEditingNote(false)}
-                placeholder="Anote aqui..."
-                autoFocus
-              />
-            ) : (
-              <span
-                className="text-[#B1B1B1] cursor-pointer"
-                onClick={() => setIsEditingNote(true)}
-              >
-                Anote aqui...
-              </span>
-            )}
+            <button
+              onClick={saveNote}
+              className={`self-start mt-4 px-4 py-2 rounded-md text-white font-medium ${
+                title.trim()
+                  ? 'bg-[#434561] hover:bg-[#5a5c7a]'
+                  : 'bg-gray-400 cursor-not-allowed'
+              }`}
+              disabled={!title.trim()}
+            >
+              Salvar Nota
+            </button>
           </div>
         </div>
       </main>
