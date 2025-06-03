@@ -19,6 +19,8 @@ import {
   Timer,
   Clock4,
   RotateCcw,
+  Pencil,
+  Trash2,
 } from 'lucide-react';
 
 type Materia = {
@@ -163,6 +165,56 @@ function Estudos() {
     setMostrarFormulario(false);
   };
 
+  const handleEditarMateria = (materia: Materia) => {
+    (document.getElementById('materia') as HTMLInputElement).value =
+      materia.nome;
+    (document.getElementById('cor') as HTMLInputElement).value = materia.cor;
+    (document.getElementById('dia') as HTMLSelectElement).value = materia.dia;
+    (document.getElementById('hora') as HTMLSelectElement).value = materia.hora;
+
+    // Exclui a versão antiga e permite salvar novamente
+    const novaLista = materias.filter(
+      (m: Materia) =>
+        !(
+          m.nome === materia.nome &&
+          m.dia === materia.dia &&
+          m.hora === materia.hora
+        ),
+    );
+    setMaterias(novaLista);
+
+    const horaIndex = parseInt(materia.hora.split(':')[0], 10) - 7;
+    const diaIndex = diasSemana.indexOf(materia.dia);
+    const novoCronograma = [...cronograma];
+    novoCronograma[horaIndex][diaIndex] = { titulo: '', cor: '' };
+    setCronograma(novoCronograma);
+
+    setMostrarFormulario(true);
+  };
+
+  const handleExcluirMateria = (materia: Materia) => {
+    const confirmacao = confirm(
+      `Deseja realmente excluir a matéria "${materia.nome}"?`,
+    );
+    if (!confirmacao) return;
+
+    const novaLista = materias.filter(
+      (m: Materia) =>
+        !(
+          m.nome === materia.nome &&
+          m.dia === materia.dia &&
+          m.hora === materia.hora
+        ),
+    );
+    setMaterias(novaLista);
+
+    const horaIndex = parseInt(materia.hora.split(':')[0], 10) - 7;
+    const diaIndex = diasSemana.indexOf(materia.dia);
+    const novoCronograma = [...cronograma];
+    novoCronograma[horaIndex][diaIndex] = { titulo: '', cor: '' };
+    setCronograma(novoCronograma);
+  };
+
   const horasPorDia = diasSemana.map(
     (dia) => materias.filter((m: Materia) => m.dia === dia).length,
   );
@@ -171,7 +223,9 @@ function Estudos() {
 
   const materiasAgrupadas = materias.reduce(
     (acc: MateriaAgrupada[], curr: Materia) => {
-      const existente = acc.find((m) => m.nome === curr.nome);
+      const existente = acc.find(
+        (m) => m.nome === curr.nome && m.cor === curr.cor,
+      );
       if (existente) {
         existente.value += 1;
       } else {
@@ -184,12 +238,16 @@ function Estudos() {
 
   const [tabelaAtiva, setTabelaAtiva] = useState(false);
 
+  const [menuAberto, setMenuAberto] = useState(true);
+
   return (
     <>
       <main className="flex">
         {/* Menu */}
         <div
-          className="fixed top-0 left-0 flex flex-col justify-between gap-4 h-screen w-[300px] bg-cover bg-center"
+          className={`fixed top-0 left-0 flex flex-col justify-between gap-4 h-screen w-[300px] bg-cover bg-center transition-transform duration-300 ${
+            menuAberto ? 'translate-x-0' : '-translate-x-full'
+          }`}
           style={{
             backgroundImage: "url('/menu.png')",
           }}
@@ -285,16 +343,36 @@ function Estudos() {
                               (materia: Materia, idx: number) => (
                                 <li
                                   key={idx}
-                                  className="flex items-center gap-2 text-gray-200"
+                                  className="flex items-center justify-between text-gray-200"
                                 >
-                                  <div
-                                    className="w-3 h-3 rounded-full"
-                                    style={{ backgroundColor: materia.cor }}
-                                  />
-                                  <span className="font-medium">
-                                    {materia.hora}
-                                  </span>{' '}
-                                  - <span>{materia.nome}</span>
+                                  <div className="flex items-center gap-2">
+                                    <div
+                                      className="w-3 h-3 rounded-full"
+                                      style={{ backgroundColor: materia.cor }}
+                                    />
+                                    <span className="font-medium">
+                                      {materia.hora}
+                                    </span>{' '}
+                                    - <span>{materia.nome}</span>
+                                  </div>
+                                  <div className="flex gap-1">
+                                    <button
+                                      onClick={() =>
+                                        handleEditarMateria(materia)
+                                      }
+                                      className="hover:text-yellow-400 transition"
+                                    >
+                                      <Pencil size={16} />
+                                    </button>
+                                    <button
+                                      onClick={() =>
+                                        handleExcluirMateria(materia)
+                                      }
+                                      className="hover:text-red-400 transition"
+                                    >
+                                      <Trash2 size={16} />
+                                    </button>
+                                  </div>
                                 </li>
                               ),
                             )}
@@ -354,12 +432,19 @@ function Estudos() {
         </div>
 
         <div
-          className={`${darkMode ? 'bg-[#1f2130] text-white' : 'bg-white text-black'} min-h-screen w-full ml-[300px]`}
+          className={`${
+            darkMode ? 'bg-[#1f2130] text-white' : 'bg-white text-black'
+          } min-h-screen w-full transition-all duration-300 ${
+            menuAberto ? 'ml-[300px]' : 'ml-0'
+          }`}
         >
           <div className="flex flex-col gap-2 w-full pb-7">
             <div className="flex justify-between px-6">
               <div className="flex py-4 gap-4 items-center">
-                <Menu className="w-5 h-5" />
+                <Menu
+                  className="w-5 h-5 cursor-pointer"
+                  onClick={() => setMenuAberto(!menuAberto)}
+                />
 
                 <div className="flex items-center gap-1">
                   <LibraryBig />

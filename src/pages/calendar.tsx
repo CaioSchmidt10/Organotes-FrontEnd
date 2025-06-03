@@ -36,6 +36,11 @@ function Calendar() {
   const [diaEvento, setDiaEvento] = useState('0'); // 0 = Segunda
   const [horaEvento, setHoraEvento] = useState('07:00');
 
+  const [eventoEmEdicao, setEventoEmEdicao] = useState<null | {
+    index: number;
+    evento: Evento;
+  }>(null);
+
   const handleSalvarEvento = () => {
     const horaValida = /^([0-9]{2}):([0-9]{2})$/.test(horaEvento);
     const [h, m] = horaEvento.split(':').map(Number);
@@ -50,29 +55,43 @@ function Calendar() {
       return;
     }
 
-    setEventos([
-      ...eventos,
-      {
+    let novosEventos = [...eventos];
+
+    if (eventoEmEdicao) {
+      novosEventos[eventoEmEdicao.index] = {
         titulo: tituloEvento,
         dia: parseInt(diaEvento, 10),
         hora: horaEvento,
-      },
-    ]);
+      };
+      setEventoEmEdicao(null);
+    } else {
+      novosEventos.push({
+        titulo: tituloEvento,
+        dia: parseInt(diaEvento, 10),
+        hora: horaEvento,
+      });
+    }
 
-    // Resetar e fechar modal
+    setEventos(novosEventos);
+    localStorage.setItem('eventos', JSON.stringify(novosEventos));
+
     setTituloEvento('');
     setDiaEvento('0');
     setHoraEvento('07:00');
     setMostrarFormulario(false);
+  };
 
-    const novosEventos = [
-      ...eventos,
-      {
-        titulo: tituloEvento,
-        dia: parseInt(diaEvento, 10),
-        hora: horaEvento,
-      },
-    ];
+  const handleEditar = (evento: Evento, index: number) => {
+    setEventoEmEdicao({ evento, index });
+    setTituloEvento(evento.titulo);
+    setDiaEvento(evento.dia.toString());
+    setHoraEvento(evento.hora);
+    setMostrarFormulario(true);
+  };
+
+  const handleExcluir = (index: number) => {
+    const novosEventos = [...eventos];
+    novosEventos.splice(index, 1);
     setEventos(novosEventos);
     localStorage.setItem('eventos', JSON.stringify(novosEventos));
   };
@@ -256,14 +275,46 @@ function Calendar() {
 
                             {eventosDoDia.length > 0 ? (
                               <ul className="ml-2 text-gray-300 text-sm list-disc">
-                                {eventosDoDia.map((evento, idx) => (
-                                  <li key={idx}>
-                                    <span className="font-medium">
-                                      {evento.hora}
-                                    </span>{' '}
-                                    - {evento.titulo}
-                                  </li>
-                                ))}
+                                {eventosDoDia.map((evento, idx) => {
+                                  const indexGlobal = eventos.findIndex(
+                                    (e) =>
+                                      e.titulo === evento.titulo &&
+                                      e.dia === evento.dia &&
+                                      e.hora === evento.hora,
+                                  );
+
+                                  return (
+                                    <li
+                                      key={idx}
+                                      className="flex justify-between items-center mb-1"
+                                    >
+                                      <div>
+                                        <span className="font-medium">
+                                          {evento.hora}
+                                        </span>{' '}
+                                        - {evento.titulo}
+                                      </div>
+                                      <div className="flex gap-1 ml-2">
+                                        <button
+                                          onClick={() =>
+                                            handleEditar(evento, indexGlobal)
+                                          }
+                                          className="text-blue-400 hover:text-blue-600 text-xs"
+                                        >
+                                          Editar
+                                        </button>
+                                        <button
+                                          onClick={() =>
+                                            handleExcluir(indexGlobal)
+                                          }
+                                          className="text-red-400 hover:text-red-600 text-xs"
+                                        >
+                                          Excluir
+                                        </button>
+                                      </div>
+                                    </li>
+                                  );
+                                })}
                               </ul>
                             ) : (
                               <p className="text-gray-500 text-xs ml-2">
