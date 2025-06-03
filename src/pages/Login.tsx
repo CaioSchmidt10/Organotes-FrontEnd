@@ -42,6 +42,9 @@ function Login() {
         },
       );
 
+      const user = response.data.user;
+      localStorage.setItem('user', JSON.stringify(user));
+
       localStorage.setItem('token', response.data.accessToken);
       console.log('Token armazenado:', response.data.accessToken);
 
@@ -139,7 +142,7 @@ function Login() {
             style={{
               backgroundImage: "url('/bg.png')",
               backgroundSize: 'cover',
-              backgroundPosition: '0px -300px',
+              backgroundPosition: '0px -165px',
               height: '63.7vh',
               width: '100%',
             }}
@@ -399,7 +402,7 @@ function Login() {
             <img src="/Desktop.png" alt="imagem" className="w-full h-auto" />
 
             <img
-              src="/Frame.png"
+              src="/Estudos.png"
               alt="imagem"
               className="absolute bottom-[-40px] right-[-45px] w-1/3 h-auto"
             />

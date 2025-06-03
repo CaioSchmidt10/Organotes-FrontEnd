@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import React from 'react';
 import {
   Search,
@@ -23,6 +23,13 @@ function Calendar() {
   };
 
   const [eventos, setEventos] = useState<Evento[]>([]);
+
+  useEffect(() => {
+    const eventosSalvos = localStorage.getItem('eventos');
+    if (eventosSalvos) {
+      setEventos(JSON.parse(eventosSalvos));
+    }
+  }, []);
 
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
   const [tituloEvento, setTituloEvento] = useState('');
@@ -57,6 +64,17 @@ function Calendar() {
     setDiaEvento('0');
     setHoraEvento('07:00');
     setMostrarFormulario(false);
+
+    const novosEventos = [
+      ...eventos,
+      {
+        titulo: tituloEvento,
+        dia: parseInt(diaEvento, 10),
+        hora: horaEvento,
+      },
+    ];
+    setEventos(novosEventos);
+    localStorage.setItem('eventos', JSON.stringify(novosEventos));
   };
 
   const [termoBusca, setTermoBusca] = useState('');
@@ -128,179 +146,196 @@ function Calendar() {
       data,
     };
   });
+
+  const [isMenuOpen, setIsMenuOpen] = useState(true);
+
+  function toggleMenu() {
+    setIsMenuOpen((prev) => !prev);
+  }
+
   return (
     <>
       <main className="flex">
-        {/* Menu */}
-        <div
-          className="fixed flex flex-col justify-between gap-4 h-screen w-[300px] bg-cover bg-center"
-          style={{
-            backgroundImage: "url('/menu.png')",
-          }}
-        >
-          <div className="flex flex-col gap-3">
-            {/* Nome e Logo */}
-            <div className="pt-3 flex justify-center">
-              <h1 className="text-4xl text-white relative font-bold after:content-[''] after:block after:w-[68px] after:h-[2px] after:bg-white after:ml-auto">
-                OrgaNotes
-              </h1>
-              <img src="/logo.png" alt="Logo" className="mt-2 h-8" />
-            </div>
-            <div className="w-full h-[1px] bg-white"></div>
-            {/* Categorias */}
-            <div className="px-3 mx-3 text-white bg-[#434561] flex justify-center gap-4 rounded-2xl">
-              <Link to={'/Estudos'}>
-                <div className="flex hover:text-[#CACCE5]  opacity-65 hover:underline transition duration-200 ease-in-out cursor-pointer px-2 py-2">
-                  <h1>Estudos</h1>
+        {/* Menu lateral */}
+        {isMenuOpen && (
+          <div
+            className="fixed flex flex-col justify-between gap-4 h-screen w-[300px] bg-cover bg-center"
+            style={{ backgroundImage: "url('/menu.png')" }}
+          >
+            {/* Menu */}
+            <div
+              className="fixed flex flex-col justify-between gap-4 h-screen w-[300px] bg-cover bg-center"
+              style={{
+                backgroundImage: "url('/menu.png')",
+              }}
+            >
+              <div className="flex flex-col gap-3">
+                {/* Nome e Logo */}
+                <div className="pt-3 flex justify-center">
+                  <h1 className="text-4xl text-white relative font-bold after:content-[''] after:block after:w-[68px] after:h-[2px] after:bg-white after:ml-auto">
+                    OrgaNotes
+                  </h1>
+                  <img src="/logo.png" alt="Logo" className="mt-2 h-8" />
                 </div>
-              </Link>
+                <div className="w-full h-[1px] bg-white"></div>
+                {/* Categorias */}
+                <div className="px-3 mx-3 text-white bg-[#434561] flex justify-center gap-4 rounded-2xl">
+                  <Link to={'/Estudos'}>
+                    <div className="flex hover:text-[#CACCE5]  opacity-65 hover:underline transition duration-200 ease-in-out cursor-pointer px-2 py-2">
+                      <h1>Estudos</h1>
+                    </div>
+                  </Link>
 
-              <Link to={'/Calendar'}>
-                <div className="flex  hover:text-[#CACCE5] hover:underline transition duration-200 ease-in-out cursor-pointer bg-[#3B3D58] px-2 py-2 rounded-xl">
-                  <h1>Calendário</h1>
+                  <Link to={'/Calendar'}>
+                    <div className="flex  hover:text-[#CACCE5] hover:underline transition duration-200 ease-in-out cursor-pointer bg-[#3B3D58] px-2 py-2 rounded-xl">
+                      <h1>Calendário</h1>
+                    </div>
+                  </Link>
+
+                  <Link to={'/Notes'}>
+                    <div className="flex hover:text-[#CACCE5] hover:underline  opacity-65 transition duration-200 ease-in-out cursor-pointer px-2 py-2">
+                      <h1>Notas</h1>
+                    </div>
+                  </Link>
                 </div>
-              </Link>
-
-              <Link to={'/Notes'}>
-                <div className="flex hover:text-[#CACCE5] hover:underline  opacity-65 transition duration-200 ease-in-out cursor-pointer px-2 py-2">
-                  <h1>Notas</h1>
-                </div>
-              </Link>
-            </div>
-            <div className="w-full h-[1px] bg-white"></div>
-            {/* Barra de Pesquisa */}
-            <div className="px-3 py-2 mx-3 text-white bg-[#434561] flex gap-4 rounded-2xl opacity-65 items-center">
-              <Search />
-              <input
-                type="text"
-                placeholder="Pesquisar..."
-                className="bg-transparent outline-none placeholder-white text-white w-full"
-              />
-            </div>
-            <div className="w-full h-[1px] bg-white"></div>
-            {/* Calendario */}
-            <div className="mx-3 text-white">
-              <button
-                onClick={toggle}
-                className="px-2 flex items-center gap-2 focus:outline-none"
-              >
-                <ChevronRight
-                  className={`transition-transform duration-300 ${
-                    isOpen ? 'rotate-90' : ''
-                  }`}
-                />
-                <CalendarDays />
-                <h1 className="text-2xl">Calendário</h1>
-              </button>
-
-              <div
-                className={`transition-all duration-500 ease-in-out overflow-y-auto rounded-2xl ${
-                  isOpen ? 'opacity-100 mt-2' : 'opacity-0'
-                }`}
-                style={{
-                  maxHeight: isOpen ? '240px' : '0px', // ← Altura original restaurada
-                  background:
-                    'linear-gradient(180deg, rgba(71,72,120,0.9), rgba(122,123,194,0.7))',
-                  backdropFilter: 'blur(10px)',
-                  WebkitBackdropFilter: 'blur(10px)',
-                  transition:
-                    'max-height 0.5s ease-in-out, opacity 0.5s ease-in-out',
-                }}
-              >
-                <div className="py-4 px-4">
-                  {datasDaSemana.map(({ diaIndex, label }) => {
-                    const eventosDoDia = eventos
-                      .filter((e) => e.dia === diaIndex)
-                      .sort((a, b) => {
-                        const horaA = parseInt(a.hora.split(':')[0], 10);
-                        const horaB = parseInt(b.hora.split(':')[0], 10);
-                        return horaA - horaB;
-                      });
-
-                    return (
-                      <div key={diaIndex} className="mb-4">
-                        <h2 className="text-sm font-semibold text-white mb-1">
-                          {label}
-                        </h2>
-
-                        {eventosDoDia.length > 0 ? (
-                          <ul className="ml-2 text-gray-300 text-sm list-disc">
-                            {eventosDoDia.map((evento, idx) => (
-                              <li key={idx}>
-                                <span className="font-medium">
-                                  {evento.hora}
-                                </span>{' '}
-                                - {evento.titulo}
-                              </li>
-                            ))}
-                          </ul>
-                        ) : (
-                          <p className="text-gray-500 text-xs ml-2">
-                            Sem tarefas
-                          </p>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Rodapé - Menu */}
-          <div className="flex flex-col gap-2 px-5">
-            <Link to="/" className="flex items-center gap-2 group">
-              <div className="bg-[#979ACB] rounded-full">
-                <MessageCircleQuestion className="text-white w-5 h-5" />
-              </div>
-              <span className="text-white transition-all duration-300 group-hover:underline group-hover:text-[#CACCE5]">
-                Suporte
-              </span>
-            </Link>
-
-            <Link to="/" className="flex items-center gap-2 group">
-              <div className="bg-[#979ACB] rounded-xl">
-                <SquareArrowRight className="text-white w-5 h-5" />
-              </div>
-              <span className="text-white transition-all duration-300 group-hover:underline group-hover:text-[#CACCE5]">
-                Sair
-              </span>
-            </Link>
-
-            <div className="w-full h-[1px] bg-white"></div>
-
-            <div className="flex items-center gap-2 pb-4">
-              <Settings className="text-[#979ACB]" />
-              <button
-                onClick={() => setDarkMode(!darkMode)}
-                className="flex items-center gap-2 text-white hover:text-[#CACCE5] transition duration-300"
-              >
-                <span className="leading-none">Modo Noturno</span>
-                <div
-                  className={`w-10 h-5 rounded-full relative transition-colors duration-300 flex items-center ${
-                    darkMode ? 'bg-blue-500' : 'bg-[#979ACB]'
-                  }`}
-                >
-                  <div
-                    className={`w-4 h-4 bg-white rounded-full absolute top-0.5 transition-transform duration-300 ${
-                      darkMode ? 'translate-x-5' : 'translate-x-0.5'
-                    }`}
+                <div className="w-full h-[1px] bg-white"></div>
+                {/* Barra de Pesquisa */}
+                <div className="px-3 py-2 mx-3 text-white bg-[#434561] flex gap-4 rounded-2xl opacity-65 items-center">
+                  <Search />
+                  <input
+                    type="text"
+                    placeholder="Pesquisar..."
+                    className="bg-transparent outline-none placeholder-white text-white w-full"
                   />
                 </div>
-              </button>
+                <div className="w-full h-[1px] bg-white"></div>
+                {/* Calendario */}
+                <div className="mx-3 text-white">
+                  <button
+                    onClick={toggle}
+                    className="px-2 flex items-center gap-2 focus:outline-none"
+                  >
+                    <ChevronRight
+                      className={`transition-transform duration-300 ${
+                        isOpen ? 'rotate-90' : ''
+                      }`}
+                    />
+                    <CalendarDays />
+                    <h1 className="text-2xl">Calendário</h1>
+                  </button>
+
+                  <div
+                    className={`transition-all duration-500 ease-in-out overflow-y-auto rounded-2xl ${
+                      isOpen ? 'opacity-100 mt-2' : 'opacity-0'
+                    }`}
+                    style={{
+                      maxHeight: isOpen ? '240px' : '0px', // ← Altura original restaurada
+                      background:
+                        'linear-gradient(180deg, rgba(71,72,120,0.9), rgba(122,123,194,0.7))',
+                      backdropFilter: 'blur(10px)',
+                      WebkitBackdropFilter: 'blur(10px)',
+                      transition:
+                        'max-height 0.5s ease-in-out, opacity 0.5s ease-in-out',
+                    }}
+                  >
+                    <div className="py-4 px-4">
+                      {datasDaSemana.map(({ diaIndex, label }) => {
+                        const eventosDoDia = eventos
+                          .filter((e) => e.dia === diaIndex)
+                          .sort((a, b) => {
+                            const horaA = parseInt(a.hora.split(':')[0], 10);
+                            const horaB = parseInt(b.hora.split(':')[0], 10);
+                            return horaA - horaB;
+                          });
+
+                        return (
+                          <div key={diaIndex} className="mb-4">
+                            <h2 className="text-sm font-semibold text-white mb-1">
+                              {label}
+                            </h2>
+
+                            {eventosDoDia.length > 0 ? (
+                              <ul className="ml-2 text-gray-300 text-sm list-disc">
+                                {eventosDoDia.map((evento, idx) => (
+                                  <li key={idx}>
+                                    <span className="font-medium">
+                                      {evento.hora}
+                                    </span>{' '}
+                                    - {evento.titulo}
+                                  </li>
+                                ))}
+                              </ul>
+                            ) : (
+                              <p className="text-gray-500 text-xs ml-2">
+                                Sem tarefas
+                              </p>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Rodapé - Menu */}
+              <div className="flex flex-col gap-2 px-5">
+                <Link to="/" className="flex items-center gap-2 group">
+                  <div className="bg-[#979ACB] rounded-full">
+                    <MessageCircleQuestion className="text-white w-5 h-5" />
+                  </div>
+                  <span className="text-white transition-all duration-300 group-hover:underline group-hover:text-[#CACCE5]">
+                    Suporte
+                  </span>
+                </Link>
+
+                <Link to="/" className="flex items-center gap-2 group">
+                  <div className="bg-[#979ACB] rounded-xl">
+                    <SquareArrowRight className="text-white w-5 h-5" />
+                  </div>
+                  <span className="text-white transition-all duration-300 group-hover:underline group-hover:text-[#CACCE5]">
+                    Sair
+                  </span>
+                </Link>
+
+                <div className="w-full h-[1px] bg-white"></div>
+
+                <div className="flex items-center gap-2 pb-4">
+                  <Settings className="text-[#979ACB]" />
+                  <button
+                    onClick={() => setDarkMode(!darkMode)}
+                    className="flex items-center gap-2 text-white hover:text-[#CACCE5] transition duration-300"
+                  >
+                    <span className="leading-none">Modo Noturno</span>
+                    <div
+                      className={`w-10 h-5 rounded-full relative transition-colors duration-300 flex items-center ${
+                        darkMode ? 'bg-blue-500' : 'bg-[#979ACB]'
+                      }`}
+                    >
+                      <div
+                        className={`w-4 h-4 bg-white rounded-full absolute top-0.5 transition-transform duration-300 ${
+                          darkMode ? 'translate-x-5' : 'translate-x-0.5'
+                        }`}
+                      />
+                    </div>
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
-        </div>
+        )}
 
         {/* Calendário */}
         <div
-          className={`flex flex-col gap-2 w-full ml-[300px] ${
-            darkMode ? 'bg-[#1f1f2e] text-white' : 'bg-white text-gray-800'
-          }`}
+          className={`flex flex-col gap-2 w-full transition-all duration-300 ${
+            isMenuOpen ? 'ml-[300px]' : 'ml-0'
+          } ${darkMode ? 'bg-[#1f1f2e] text-white' : 'bg-white text-gray-800'}`}
         >
           <div className="flex justify-between">
             <div className="flex px-6 py-4 gap-4 items-center">
-              <Menu className="w-5 h-5" />
+              <button onClick={toggleMenu}>
+                <Menu className="w-5 h-5" />
+              </button>
 
               {/* Texto da data */}
               <span

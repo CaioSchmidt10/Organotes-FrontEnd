@@ -31,8 +31,9 @@ function Cadastro() {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target;
-    setFormData((prev) => ({
-      ...prev,
+
+    setFormData((prevData) => ({
+      ...prevData,
       [name]: type === 'checkbox' ? checked : value,
     }));
   };
@@ -40,7 +41,7 @@ function Cadastro() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const { name, email, password, cellphoneNumber } = formData;
+    const { name, email, password, cellphoneNumber, receiveNotify } = formData;
 
     if (!name || !email || !password || !cellphoneNumber) {
       alert('Todos os campos devem ser preenchidos.');
@@ -50,12 +51,17 @@ function Cadastro() {
     try {
       const response = await axios.post(
         'https://organotes-backend.onrender.com/auth/signUp',
-        formData,
+        {
+          name,
+          email,
+          password,
+          cellphoneNumber,
+          receiveNotify,
+        },
       );
 
       console.log('Cadastro realizado:', response.data);
 
-      // Redirecionar para tela de login ou dashboard
       navigate('/Calendar');
     } catch (error: any) {
       console.error(error.message);
@@ -149,7 +155,7 @@ function Cadastro() {
             style={{
               backgroundImage: "url('/bg.png')",
               backgroundSize: 'cover',
-              backgroundPosition: '0px -300px',
+              backgroundPosition: '0px -165px',
               height: '68.2vh',
               width: '100%',
             }}
@@ -457,7 +463,7 @@ function Cadastro() {
             <img src="/Desktop.png" alt="imagem" className="w-full h-auto" />
 
             <img
-              src="/Frame.png"
+              src="/Estudos.png"
               alt="imagem"
               className="absolute bottom-[-40px] right-[-45px] w-1/3 h-auto"
             />

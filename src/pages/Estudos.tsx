@@ -21,6 +21,24 @@ import {
   RotateCcw,
 } from 'lucide-react';
 
+type Materia = {
+  nome: string;
+  cor: string;
+  dia: string;
+  hora: string;
+};
+
+type MateriaAgrupada = {
+  nome: string;
+  value: number;
+  cor: string;
+};
+
+type CelulaCronograma = {
+  titulo: string;
+  cor: string;
+};
+
 function Estudos() {
   const [isOpen, setIsOpen] = useState(false);
 
@@ -30,14 +48,17 @@ function Estudos() {
 
   const [tempo, setTempo] = useState('00:00:00');
   const [timerAtivo, setTimerAtivo] = useState(false);
-  const [segundos, setSegundos] = useState(0);
+  const [segundos, setSegundos] = useState(() => {
+    const salvos = localStorage.getItem('segundos');
+    return salvos ? JSON.parse(salvos) : 0;
+  });
 
   useEffect(() => {
     let intervalo: any;
 
     if (timerAtivo) {
       intervalo = setInterval(() => {
-        setSegundos((prev) => prev + 1);
+        setSegundos((prev: number) => prev + 1);
       }, 1000);
     } else {
       clearInterval(intervalo);
@@ -63,15 +84,33 @@ function Estudos() {
 
   const horarios = Array.from({ length: 17 }, (_, i) => `${7 + i}:00`);
 
-  const [cronograma, setCronograma] = useState(
-    Array.from({ length: 17 }, () => Array(7).fill({ titulo: '', cor: '' })),
-  );
+  const [cronograma, setCronograma] = useState(() => {
+    const salvos = localStorage.getItem('cronograma');
+    return salvos
+      ? JSON.parse(salvos)
+      : Array.from({ length: 17 }, () =>
+          Array(7).fill({ titulo: '', cor: '' }),
+        );
+  });
 
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
 
-  const [materias, setMaterias] = useState<
-    { nome: string; cor: string; dia: string; hora: string }[]
-  >([]);
+  const [materias, setMaterias] = useState(() => {
+    const salvos = localStorage.getItem('materias');
+    return salvos ? JSON.parse(salvos) : [];
+  });
+
+  useEffect(() => {
+    localStorage.setItem('materias', JSON.stringify(materias));
+  }, [materias]);
+
+  useEffect(() => {
+    localStorage.setItem('cronograma', JSON.stringify(cronograma));
+  }, [cronograma]);
+
+  useEffect(() => {
+    localStorage.setItem('segundos', JSON.stringify(segundos));
+  }, [segundos]);
 
   const [materiaSelecionada, setMateriaSelecionada] = useState<{
     nome: string;
@@ -87,8 +126,10 @@ function Estudos() {
     const dia = (document.getElementById('dia') as HTMLSelectElement).value;
     const hora = (document.getElementById('hora') as HTMLSelectElement).value;
 
-    // Impede matéria diferente com mesma cor
-    const corDuplicada = materias.find((m) => m.cor === cor && m.nome !== nome);
+    const corDuplicada = materias.find(
+      (m: { nome: string; cor: string; dia: string; hora: string }) =>
+        m.cor === cor && m.nome !== nome,
+    );
     if (corDuplicada) {
       alert(
         `A cor escolhida já está sendo usada pela matéria "${corDuplicada.nome}". Escolha outra cor.`,
@@ -96,7 +137,6 @@ function Estudos() {
       return;
     }
 
-    // Impede conflito de horário no cronograma
     const diaIndex = diasSemana.indexOf(dia);
     const horaIndex = parseInt(hora.split(':')[0], 10) - 7;
     const ocupado = cronograma[horaIndex]?.[diaIndex];
@@ -108,29 +148,29 @@ function Estudos() {
       return;
     }
 
-    // Atualiza a matriz do cronograma
     const novaMatriz = [...cronograma];
     novaMatriz[horaIndex][diaIndex] = { titulo: nome, cor };
     setCronograma(novaMatriz);
 
-    // Verifica se já existe a mesma matéria no mesmo dia/hora
     const jaExiste = materias.find(
-      (m) => m.nome === nome && m.dia === dia && m.hora === hora,
+      (m: Materia) => m.nome === nome && m.dia === dia && m.hora === hora,
     );
 
     if (!jaExiste) {
-      setMaterias((prev) => [...prev, { nome, cor, dia, hora }]);
+      setMaterias((prev: Materia[]) => [...prev, { nome, cor, dia, hora }]);
     }
 
     setMostrarFormulario(false);
   };
 
   const horasPorDia = diasSemana.map(
-    (dia) => materias.filter((m) => m.dia === dia).length,
+    (dia) => materias.filter((m: Materia) => m.dia === dia).length,
   );
 
+  type MateriaAgrupada = { nome: string; value: number; cor: string };
+
   const materiasAgrupadas = materias.reduce(
-    (acc, curr) => {
+    (acc: MateriaAgrupada[], curr: Materia) => {
       const existente = acc.find((m) => m.nome === curr.nome);
       if (existente) {
         existente.value += 1;
@@ -139,8 +179,10 @@ function Estudos() {
       }
       return acc;
     },
-    [] as { nome: string; value: number; cor: string }[],
+    [],
   );
+
+  const [tabelaAtiva, setTabelaAtiva] = useState(false);
 
   return (
     <>
@@ -224,8 +266,8 @@ function Estudos() {
                 <div className="py-4 px-4">
                   {diasSemana.map((dia) => {
                     const materiasDoDia = materias
-                      .filter((m) => m.dia === dia)
-                      .sort((a, b) => {
+                      .filter((m: Materia) => m.dia === dia)
+                      .sort((a: Materia, b: Materia) => {
                         const horaA = parseInt(a.hora.split(':')[0], 10);
                         const horaB = parseInt(b.hora.split(':')[0], 10);
                         return horaA - horaB;
@@ -239,27 +281,25 @@ function Estudos() {
 
                         {materiasDoDia.length > 0 ? (
                           <ul className="ml-2 text-sm space-y-1">
-                            {materiasDoDia.map((materia, idx) => (
-                              <li
-                                key={idx}
-                                className="flex items-center gap-2 text-gray-200"
-                              >
-                                <div
-                                  className="w-3 h-3 rounded-full"
-                                  style={{ backgroundColor: materia.cor }}
-                                />
-                                <span className="font-medium">
-                                  {materia.hora}
-                                </span>{' '}
-                                - <span>{materia.nome}</span>
-                              </li>
-                            ))}
+                            {materiasDoDia.map(
+                              (materia: Materia, idx: number) => (
+                                <li
+                                  key={idx}
+                                  className="flex items-center gap-2 text-gray-200"
+                                >
+                                  <div
+                                    className="w-3 h-3 rounded-full"
+                                    style={{ backgroundColor: materia.cor }}
+                                  />
+                                  <span className="font-medium">
+                                    {materia.hora}
+                                  </span>{' '}
+                                  - <span>{materia.nome}</span>
+                                </li>
+                              ),
+                            )}
                           </ul>
-                        ) : (
-                          <p className="text-gray-400 text-xs ml-2">
-                            Sem matérias
-                          </p>
-                        )}
+                        ) : null}
                       </div>
                     );
                   })}
@@ -463,7 +503,6 @@ function Estudos() {
                 </button>
               </div>
             </div>
-
             <div className="grid grid-cols-1 md:grid-cols-3 gap-1 mt-1 px-6">
               {/* Bloco 1: Pendências */}
               <div
@@ -566,60 +605,107 @@ function Estudos() {
               </div>
             </div>
 
-            {/* Tabela */}
-            <div className="overflow-auto px-2">
-              <div className="border border-[#DADCE0] w-full">
+            <div className="px-2">
+              {/* Cabeçalho e botão de ativação */}
+              <div className="px-4">
+                {/* Linha preta */}
+                <div className="w-full h-[1px] bg-black mb-4" />
+
+                {/* Cabeçalho de Revisões e Botão */}
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 px-2">
+                  <div className="mb-2 sm:mb-0">
+                    <h2 className="text-xl font-bold text-gray-700">
+                      Revisões
+                    </h2>
+                    <p className="text-sm font-medium text-gray-600">
+                      Sugestões cronograma automático
+                    </p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                      Nossa IA analisa suas matérias e compromissos para criar
+                      um cronograma eficiente e personalizado!
+                    </p>
+                  </div>
+
+                  <button
+                    onClick={() => setTabelaAtiva((prev) => !prev)}
+                    className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-4 py-2 rounded-xl shadow transition duration-300"
+                  >
+                    {tabelaAtiva ? 'Desativar Cronograma' : 'Ativar Cronograma'}
+                  </button>
+                </div>
+              </div>
+
+              {/* Tabela de revisões */}
+              <div
+                className={`overflow-auto transition duration-300 ${
+                  !tabelaAtiva
+                    ? 'bg-[#f5f5f5] text-gray-400 border-gray-300 pointer-events-none'
+                    : ''
+                }`}
+              >
                 <div
-                  className={`grid grid-cols-8 border text-[11px] sm:text-sm ${
-                    darkMode
-                      ? 'border-[#555774] bg-[#2f3146] text-white'
-                      : 'border-[#DADCE0] bg-white text-black'
+                  className={`border w-full rounded-md ${
+                    tabelaAtiva ? 'border-[#DADCE0]' : 'border-gray-300'
                   }`}
                 >
-                  <div className="bg-white text-black p-2 font-bold text-center border-r border-[#DADCE0]">
-                    Hora/Dia
-                  </div>
-                  {diasSemana.map((dia, index) => (
-                    <div
-                      key={dia}
-                      className={`bg-white text-black p-2 font-bold text-center ${
-                        index !== diasSemana.length - 1
-                          ? 'border-r border-[#DADCE0]'
-                          : ''
-                      }`}
-                    >
-                      {dia}
+                  {/* Cabeçalho da tabela */}
+                  <div
+                    className={`grid grid-cols-8 text-[11px] sm:text-sm ${
+                      darkMode
+                        ? tabelaAtiva
+                          ? 'border-[#555774] bg-[#2f3146] text-white'
+                          : 'bg-[#3e3f58] text-gray-400'
+                        : tabelaAtiva
+                          ? 'border-[#DADCE0] bg-white text-black'
+                          : 'bg-[#f5f5f5] text-gray-400'
+                    }`}
+                  >
+                    <div className="p-2 font-bold text-center border-r border-inherit">
+                      Hora/Dia
                     </div>
-                  ))}
-                </div>
-
-                <div className="grid grid-cols-8 gap-[4px] p-1 w-full text-[11px] sm:text-sm">
-                  {horarios.map((hora, i) => (
-                    <React.Fragment key={`linha-${i}`}>
+                    {diasSemana.map((dia, index) => (
                       <div
-                        className={`text-xs font-semibold flex items-center justify-center p-1 ${
-                          darkMode
-                            ? 'bg-[#2f3146] text-white'
-                            : 'bg-white text-black'
+                        key={dia}
+                        className={`p-2 font-bold text-center ${
+                          index !== diasSemana.length - 1
+                            ? 'border-r border-inherit'
+                            : ''
                         }`}
                       >
-                        {hora}
+                        {dia}
                       </div>
-                      {cronograma[i].map((celula, j) => (
+                    ))}
+                  </div>
+
+                  {/* Corpo da tabela */}
+                  <div className="grid grid-cols-8 gap-[4px] p-1 w-full text-[11px] sm:text-sm">
+                    {horarios.map((hora, i) => (
+                      <React.Fragment key={`linha-${i}`}>
                         <div
-                          key={`${i}-${j}`}
-                          className={`text-[10px] text-center p-1 truncate rounded shadow-sm ${
-                            celula.cor
-                              ? ''
-                              : darkMode
-                                ? 'bg-[#3b3d58] text-white'
-                                : 'bg-[#f1f1f1] text-black'
-                          }`}
-                          style={{ backgroundColor: celula.cor || undefined }}
-                        ></div>
-                      ))}
-                    </React.Fragment>
-                  ))}
+                          className={`text-xs font-semibold flex items-center justify-center p-1 ${
+                            darkMode ? 'bg-[#2f3146]' : 'bg-white'
+                          } ${tabelaAtiva ? 'text-black' : 'text-gray-400'}`}
+                        >
+                          {hora}
+                        </div>
+                        {cronograma[i].map(
+                          (celula: CelulaCronograma, j: number) => (
+                            <div
+                              key={`${i}-${j}`}
+                              className={`text-[10px] text-center p-1 truncate rounded shadow-sm ${
+                                celula.cor && tabelaAtiva ? '' : 'bg-[#f0f0f0]'
+                              } ${tabelaAtiva ? 'text-black' : 'text-gray-400'}`}
+                              style={{
+                                backgroundColor: tabelaAtiva
+                                  ? celula.cor || '#f1f1f1'
+                                  : '#f5f5f5',
+                              }}
+                            ></div>
+                          ),
+                        )}
+                      </React.Fragment>
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>
@@ -644,9 +730,15 @@ function Estudos() {
                         setMateriaSelecionada({ nome, cor, totalHoras });
                       }}
                     >
-                      {materiasAgrupadas.map((m, i) => (
-                        <Cell key={`cell-${i}`} fill={m.cor} cursor="pointer" />
-                      ))}
+                      {materiasAgrupadas.map(
+                        (m: MateriaAgrupada, i: number) => (
+                          <Cell
+                            key={`cell-${i}`}
+                            fill={m.cor}
+                            cursor="pointer"
+                          />
+                        ),
+                      )}
                     </Pie>
                   </PieChart>
 
@@ -655,7 +747,7 @@ function Estudos() {
                     <span className="font-bold mb-2 text-[#434561]">
                       {materiasAgrupadas.length} MATÉRIAS
                     </span>
-                    {materiasAgrupadas.map((m, i) => (
+                    {materiasAgrupadas.map((m: MateriaAgrupada, i: number) => (
                       <div key={i} className="flex items-center gap-2 mb-1">
                         <span
                           className="w-3 h-3 rounded-full"
